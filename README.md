@@ -138,7 +138,11 @@ void LCD_write_string(char *string)
 }
 ```
 ### 동작 영상
-<img width="633" height="471" alt="image" src="https://github.com/user-attachments/assets/35105b2d-4e0c-4d20-9a03-ea32b928f26e" />
+
+
+
+
+
 
 ### RTC_시간 대기모드
 <img width="1294" height="814" alt="image" src="https://github.com/user-attachments/assets/9d4c1bd3-a8cb-4c2c-a448-8ba518309051" />
