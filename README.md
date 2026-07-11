@@ -74,7 +74,8 @@ DS1307의 내부 레지스터 구조
 
 ### LCD 사양
 
-![LCD 모듈](https://github.com/user-attachments/assets/b5cd7fbf-9794-4304-b17d-a46b15b4912e)
+![LCD 모듈] <img width="1639" height="733" alt="image" src="https://github.com/user-attachments/assets/90e177b3-aeed-4f66-8cfd-b6a9f87a350a" />
+
 
 ### 통신 파형
 
