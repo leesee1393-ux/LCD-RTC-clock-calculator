@@ -140,12 +140,14 @@ void LCD_write_string(char *string)
 ### 동작 영상
 
 
-
+<https://youtube.com/shorts/54PC0KObX_4>
 
 
 
 ### RTC_시간 대기모드
-<img width="1294" height="814" alt="image" src="https://github.com/user-attachments/assets/9d4c1bd3-a8cb-4c2c-a448-8ba518309051" />
+
+<https://youtu.be/y-6MvUBLur4>
+
 
 
 ## 보안점
