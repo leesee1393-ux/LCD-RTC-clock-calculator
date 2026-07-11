@@ -5,10 +5,10 @@
 ATmega128A 마이크로컨트롤러를 사용하여 DS1307 RTC 모듈과 LCD를 연동한 시계 및 계산기 시스템을 구현합니다.
 
 ### 주요 기능
-- ✅ **RTC 시간 표시**: DS1307에서 I2C 통신으로 시간 데이터 수신
-- ✅ **시간 수정 기능**: 사용자가 직접 시간 설정 가능
-- ✅ **LCD 디스플레이**: 실시간 시간 및 계산 결과 표시
-- ✅ **계산기 모드**: 기본 사칙연산 지원
+-  **RTC 시간 표시**: DS1307에서 I2C 통신으로 시간 데이터 수신
+-  **시간 수정 기능**: 사용자가 직접 시간 설정 가능
+-  **LCD 디스플레이**: 실시간 시간 및 계산 결과 표시
+-  **계산기 모드**: 기본 사칙연산 지원
 
 ---
 
@@ -16,12 +16,9 @@ ATmega128A 마이크로컨트롤러를 사용하여 DS1307 RTC 모듈과 LCD를 
 
 ![개발환경](https://github.com/user-attachments/assets/c80f4981-6192-45ea-abed-67e608c34551)
 
-### 사용 하드웨어
-| 구성요소 | 모델/사양 |
-|---------|----------|
-| MCU | ATmega128A |
-| RTC 모듈 | DS1307 (I2C 인터페이스) |
-| 디스플레이 | 16x2 Character LCD |
+### 사용 하드웨어 partlist
+
+<img width="1506" height="538" alt="image" src="https://github.com/user-attachments/assets/0d795bed-5529-40c8-8c40-e02e69bded70" />
 
 ---
 
@@ -33,11 +30,28 @@ ATmega128A 마이크로컨트롤러를 사용하여 DS1307 RTC 모듈과 LCD를 
 
 ### 레지스터 맵
 
-DS1307의 내부 레지스터 구조는 다음과 같습니다:
+DS1307의 내부 레지스터 구조
 
-![레지스터 주소표](https://github.com/user-attachments/assets/975196ba-d6eb-4013-90dc-50791e4951c3)
+![레지스터 주소표] <img width="1591" height="753" alt="image" src="https://github.com/user-attachments/assets/90a2eea1-d148-40b5-9f42-abfde8aab851" />
 
-![레지스터 상세](https://github.com/user-attachments/assets/69fbd8c1-dfeb-4eda-a55b-20548e21ae94)
+
+![레지스터 맵] <img width="1004" height="389" alt="image" src="https://github.com/user-attachments/assets/c6860731-868b-43e4-b9de-546ca7069be1" />
+
+
+### 구성 회로도
+
+<img width="1294" height="885" alt="image" src="https://github.com/user-attachments/assets/d541241a-e0b7-4d7b-902b-6f4d226ba3bd" />
+
+### 제품 사진
+
+<img width="1570" height="844" alt="image" src="https://github.com/user-attachments/assets/06f0de74-771c-4a1d-874c-e52f6b5846d9" />
+
+
+
+### FSM
+
+<img width="1689" height="986" alt="image" src="https://github.com/user-attachments/assets/15823331-e786-434c-a4b0-ab4ae725c40d" />
+
 
 ### I2C 통신 파형
 
@@ -80,9 +94,71 @@ LCD와의 데이터 전송 시 나타나는 신호 파형입니다:
 
 ### 1. I2C 통신 초기화
 ```c
-// I2C 초기화 코드 예시
-void I2C_Init(void) {
-    TWSR = 0x00;
-    TWBR = ((F_CPU / SCL_CLOCK) - 16) / 2;
-    TWCR = (1 << TWEN);
+// I2C 초기화 코드 
+void I2C_init(void)
+{
+	TWSR=0x00;   
+	TWBR = (uint8_t)TWBR_VALUE; 
+	TWCR = (1 << TWEN); 
 }
+```
+
+
+
+### 2. DS1307 시간 읽기
+```c
+// DS1307에서 시간 읽기
+void RTC_read_datetime(uint8_t *buf)
+{
+	I2C_start();
+	I2C_transmit(0xD0);
+	I2C_transmit(0x00);      
+	I2C_start();             
+	I2C_transmit(0xD1);      
+	
+	buf[0] = I2C_receive_ACK();  
+	buf[1] = I2C_receive_ACK();  
+	buf[2] = I2C_receive_ACK();  
+	buf[3] = I2C_receive_ACK();  
+	buf[4] = I2C_receive_ACK();  
+	buf[5] = I2C_receive_ACK();  
+	buf[6] = I2C_receive_NACK(); 
+	I2C_stop();
+}
+```
+### 3.LCD 출력 함수
+```c
+// LCD txt 읽기
+void LCD_write_string(char *string)
+{
+	uint8_t i;
+	for(i= 0; string[i];i++)
+		LCD_write_data(string[i]);	
+}
+```
+### 동작 영상
+<img width="633" height="471" alt="image" src="https://github.com/user-attachments/assets/35105b2d-4e0c-4d20-9a03-ea32b928f26e" />
+
+### RTC_시간 대기모드
+<img width="1294" height="814" alt="image" src="https://github.com/user-attachments/assets/9d4c1bd3-a8cb-4c2c-a448-8ba518309051" />
+
+
+## 보안점
+
+### 1. 문제 현상
+
+    RTC에서 시간 신호를 전달받았으나 LCD 화면에 시간이 업데이트되지 않음.
+    LCD 화면에 시간이 아예 표시되지 않는 이슈 발생.
+
+### 2. 원인 분석
+
+    RTC 클럭 오류: RTC 모듈 자체의 하드웨어적 결함 또는 클럭 신호 불안정.
+    LCD 명암도 문제: LCD 요구 스펙에 맞는 저항값(Vo 핀 전압)이 제공되지 않아 화면이 보이지 않음.
+
+### 3. 조치 방안
+
+    RTC 교체: 정상 작동하는 RTC 모듈로 교체하여 해결.
+    가변 저항 조절: LCD의 Vo 핀에 연결된 가변 저항(Potentiometer)을 조절하여 최적의 명암도 설정.
+
+
+
